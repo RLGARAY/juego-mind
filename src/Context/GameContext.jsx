@@ -35,7 +35,7 @@ function gameReducer(state, action) {
       return {
         ...state,
         isRoundActive: true,
-        roundNumber: roundNumber + 1,
+        roundNumber: action.payload.roundNumber,
         playedCardsInRound: [],
       };
     }

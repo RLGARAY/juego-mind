@@ -4,21 +4,23 @@ import { useNavigate } from 'react-router-dom';
 // Material
 import Button from '@mui/material/Button';
 import TextField from '@mui/material/TextField';
-import FormControlLabel from '@mui/material/FormControlLabel';
-import Checkbox from '@mui/material/Checkbox';
+import Tabs from '@mui/material/Tabs';
+import Tab from '@mui/material/Tab';
 import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
 
 // Context
 import { useAuthContext } from '../Context/AuthContext';
 
 const Login = () => {
   const navigate = useNavigate();
-  const { login, createUser, authState } = useAuthContext();
+  const { loginAsGuest, login, createUser, authState } = useAuthContext();
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [username, setUsername] = useState('');
-  const [rememberMe, setRememberMe] = useState(false);
+
+  const [guest, setGuest] = useState(false);
   const [isLogin, setIsLogin] = useState(true);
 
   useEffect(() => {
@@ -29,10 +31,14 @@ const Login = () => {
 
   const handleSubmit = (event) => {
     event.preventDefault();
-    if (isLogin) {
-      login(email, password);
+    if (!guest) {
+      if (isLogin) {
+        login(email, password);
+      } else {
+        createUser(email, password, username);
+      }
     } else {
-      createUser(email, password, username);
+      loginAsGuest(username);
     }
   };
   return (
@@ -46,59 +52,78 @@ const Login = () => {
         height: '100vh',
       }}
     >
-      <h2>{isLogin ? 'Inicio de sesión' : 'Registro'}</h2>
-      <form onSubmit={handleSubmit}>
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-          <TextField
-            type="email"
-            label="Correo electrónico"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-          />
-          <TextField
-            type="password"
-            label="Contraseña"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-          />
-          {!isLogin && (
-            <TextField
-              type="text"
-              label="Nombre de usuario"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              required
-            />
-          )}
-          {/*isLogin && (
-            <FormControlLabel
-              control={
-                <Checkbox
-                  checked={rememberMe}
-                  onChange={(e) => setRememberMe(e.target.checked)}
-                  color="primary"
+      <Tabs value={guest} onChange={() => setGuest(!guest)}>
+        <Tab value={false} label="Cuenta" />
+        <Tab value={true} label="Anónimo" />
+      </Tabs>
+      {!guest ? (
+        <>
+          <h2>{isLogin ? 'Inicio de sesión' : 'Registro'}</h2>
+          <form onSubmit={handleSubmit}>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+              <TextField
+                type="email"
+                label="Correo electrónico"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+              />
+              <TextField
+                type="password"
+                label="Contraseña"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+              />
+              {!isLogin && (
+                <TextField
+                  type="text"
+                  label="Nombre de usuario"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  required
                 />
-              }
-              label="Recordarme"
-            />
-            )*/}
-          <Button type="submit" variant="contained">
-            {isLogin ? 'Iniciar sesión' : 'Registrarse'}
-          </Button>
-        </Box>
-      </form>
-      <p>
-        {isLogin ? '¿No tienes una cuenta? Regístrate' : '¿Ya tienes una cuenta? Inicia sesión'}
-        <Button
-          color="primary"
-          onClick={() => setIsLogin(!isLogin)}
-          sx={{ marginLeft: '0.5rem', textTransform: 'none' }}
-        >
-          {isLogin ? 'aquí' : 'ahora'}
-        </Button>
-      </p>
+              )}
+              <Typography variant="body1" sx={{ color: 'red' }}>
+                {authState.error}
+              </Typography>
+
+              <Button type="submit" variant="contained">
+                {isLogin ? 'Iniciar sesión' : 'Registrarse'}
+              </Button>
+            </Box>
+          </form>
+          <p>
+            {isLogin ? '¿No tienes una cuenta?' : '¿Ya tienes una cuenta?'}
+            <Button
+              color="primary"
+              onClick={() => setIsLogin(!isLogin)}
+              sx={{ marginLeft: '0.5rem', textTransform: 'none' }}
+            >
+              {isLogin ? 'Regístrate' : 'Inicia sesión'}
+            </Button>
+          </p>
+        </>
+      ) : (
+        <>
+          <h2>{'Nickname'}</h2>
+          <form onSubmit={handleSubmit}>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+              <TextField
+                type="text"
+                label="Nombre de usuario"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                required
+              />
+
+              <Button type="submit" variant="contained">
+                {'Jugar sin registrarse'}
+              </Button>
+            </Box>
+          </form>
+        </>
+      )}
     </Box>
   );
 };

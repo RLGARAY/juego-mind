@@ -13,7 +13,6 @@ import DialogContent from '@mui/material/DialogContent';
 
 //Components
 import Profile from './Profile';
-import Login from './Login';
 // import { useAuthContext } from '../Context/AuthContext';
 
 function Layout() {
@@ -57,6 +56,7 @@ function Layout() {
         </Fab>
       </Box>
 
+      {/* PROFILE Dialog */}
       <Dialog fullWidth={true} maxWidth={'xl'} open={openDialog} onClose={handleCloseDialog}>
         <DialogContent>
           <Profile onClose={handleCloseDialog} />
@@ -68,7 +68,6 @@ function Layout() {
       </Dialog>
 
       {/* MAIN CONTENT */}
-
       <Outlet />
     </Box>
   );

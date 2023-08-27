@@ -7,9 +7,6 @@ import Paper from '@mui/material/Paper';
 import TextField from '@mui/material/TextField';
 import Button from '@mui/material/Button';
 
-// Constants
-import { EnterKey } from '../Assets/global';
-
 const Home = () => {
   const navigate = useNavigate();
 
