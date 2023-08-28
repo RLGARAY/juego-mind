@@ -1,8 +1,7 @@
 import { collection, doc, getDoc, setDoc } from 'firebase/firestore';
 import { db } from './fire';
 import { getStorage } from 'firebase/storage';
-
-const usersCollection = 'users';
+import { usersCollection } from './global';
 
 export const storage = getStorage();
 
