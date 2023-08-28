@@ -1,5 +1,7 @@
 import React, { useContext, useEffect } from 'react';
-import { auth, db } from '../config/fire';
+import { auth } from '../config/fire';
+import { saveUser, userExists, getUserData } from '../config/api';
+
 import {
   signInAnonymously,
   onAuthStateChanged,
@@ -34,13 +36,6 @@ function authReducer(state, action) {
       return {
         ...state,
         error: action.payload.error,
-      };
-    }
-
-    case 'LOCAL_TOKEN_RECOVER': {
-      return {
-        ...state,
-        token: action.payload.token,
       };
     }
 
@@ -84,14 +79,27 @@ const useAuthContext = () => {
   // EFFECTS  //////////////////////////
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (user) {
-        // User is signed in, see docs for a list of available properties
-        // https://firebase.google.com/docs/reference/js/auth.user
         const uid = user.uid;
-        console.log(uid);
-        // ...
+        const exists = await userExists(user.uid);
+
+        if (exists) {
+          const loggedUser = await getUserData(uid);
+          authDispatch({
+            type: 'USER_LOGIN_SUCCESS',
+            payload: {
+              token: uid,
+              username: loggedUser.username,
+              email: loggedUser.email,
+              error: null,
+            },
+          });
+        } else {
+          saveUser(uid, { email: authState.email, username: authState.username });
+        }
       } else {
+        logout();
         authDispatch({
           type: 'USER_NOT_LOGGED',
         });
@@ -122,11 +130,9 @@ const useAuthContext = () => {
         });
       })
       .catch((error) => {
-        const errorCode = error.code;
-        const errorMessage = error.message;
         authDispatch({
           type: 'USER_LOGIN_ERROR',
-          payload: { error: errorMessage },
+          payload: { error: error.message },
         });
       });
   };
@@ -161,37 +167,21 @@ const useAuthContext = () => {
     signInWithEmailAndPassword(auth, email, password)
       .then((userCredential) => {
         const user = userCredential.user;
-        const accessToken = user.accessToken;
 
         authDispatch({
           type: 'USER_LOGIN_SUCCESS',
           payload: {
-            token: accessToken,
+            token: user.uid,
             email: email,
-            error: null,
-          },
-        });
-
-        // Get User Data from BE
-        return db.collection('users').doc(user.uid).get();
-      })
-      .then((userDB) => {
-        const userData = userDB.data();
-
-        authDispatch({
-          type: 'USER_LOGIN_SUCCESS',
-          payload: {
-            username: userData.username,
             error: null,
           },
         });
       })
       .catch((error) => {
-        const errorCode = error.code;
-        const errorMessage = error.message;
+        // Ocurrió un error durante la creación del usuario
         authDispatch({
           type: 'USER_LOGIN_ERROR',
-          payload: { error: errorMessage },
+          payload: { error: error.message },
         });
       });
   };
