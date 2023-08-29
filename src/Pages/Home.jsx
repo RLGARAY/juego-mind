@@ -1,18 +1,23 @@
 import React, { useState } from 'react';
-
 import { useNavigate } from 'react-router-dom';
+
+import { useAuthContext } from '../Context/AuthContext';
+import { useGameContext } from '../Context/GameContext';
 
 import Box from '@mui/material/Box';
 import Paper from '@mui/material/Paper';
 import TextField from '@mui/material/TextField';
 import Button from '@mui/material/Button';
+import Typography from '@mui/material/Typography';
 
 const Home = () => {
   const navigate = useNavigate();
+  const { authState } = useAuthContext();
+  const { createRoom, joinRoom } = useGameContext();
 
-  const [nick, setNick] = useState('');
-  const [roomId, setRoomId] = useState(0);
-  const [roomCode, setRoomCode] = useState(0);
+  const [roomId, setRoomId] = useState();
+  const [roomCode, setRoomCode] = useState();
+  const [joinError, setJoinError] = useState(false);
 
   /**
    * Method to set the Room Id and format
@@ -44,16 +49,19 @@ const Home = () => {
     const localRoomId = Math.floor(Math.random() * 1000)
       .toString()
       .padStart(3, '0');
-    setRoomId(localRoomId);
+    createRoom(localRoomId, authState.username);
 
     navigate('/' + localRoomId);
   };
 
-  const JoinRoom = (e) => {
-    e.preventDefault();
-    // Lógica para unirse a una sala
-    console.log(nick + roomId + roomCode);
-    // Reiniciar el formulario
+  const JoinRoom = async (e) => {
+    const roomString = roomId.toString().padStart(3, '0');
+    try {
+      await joinRoom(roomString, authState.username);
+      navigate('/' + roomId);
+    } catch (error) {
+      setJoinError(error.message);
+    }
   };
 
   return (
@@ -74,17 +82,8 @@ const Home = () => {
         }}
       >
         <TextField
-          name="nick"
-          label="Nick"
-          variant="outlined"
-          value={nick}
-          onChange={(event) => {
-            setNick(event.target.value);
-          }}
-        />
-        <TextField
           name="roomCode"
-          label="Codigo"
+          label="Clave"
           variant="outlined"
           value={roomCode}
           onChange={(event) => {
@@ -106,15 +105,6 @@ const Home = () => {
         }}
       >
         <TextField
-          name="nick"
-          label="Nick"
-          variant="outlined"
-          value={nick}
-          onChange={(event) => {
-            setNick(event.target.value);
-          }}
-        />
-        <TextField
           name="roomId"
           label="Sala"
           variant="outlined"
@@ -125,14 +115,16 @@ const Home = () => {
         />
         <TextField
           name="roomCode"
-          label="Codigo"
+          label="Clave"
           variant="outlined"
           value={roomCode}
           onChange={(event) => {
             handleRoomCodeChange(event);
           }}
         />
-
+        <Typography variant="body1" sx={{ color: 'red' }}>
+          {joinError}
+        </Typography>
         <Button variant="contained" color="primary" onClick={JoinRoom}>
           Unirse a Sala
         </Button>

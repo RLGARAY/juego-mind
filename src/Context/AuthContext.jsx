@@ -96,19 +96,30 @@ const useAuthContext = () => {
             },
           });
         } else {
-          saveUser(uid, { email: authState.email, username: authState.username });
+          // save anon to db
+          // saveUser(uid, { email: authState.email, username: authState.username });
         }
       } else {
         logout();
-        authDispatch({
-          type: 'USER_NOT_LOGGED',
-        });
       }
     });
 
+    /*// Manejar el evento beforeunload
+    const handleBeforeUnload = () => {
+      if (authState.token) {
+        // Cerrar la sesión del usuario al abandonar la página
+        auth().signOut();
+      }
+    };
+
+    // Agregar el listener al evento beforeunload
+    window.addEventListener('beforeunload', handleBeforeUnload);
+*/
     return () => {
       // Desuscribirse del listener al desmontar el componente
       unsubscribe();
+      // Remover el listener del evento beforeunload al desmontar el componente
+      //window.removeEventListener('beforeunload', handleBeforeUnload);
     };
   }, []);
 
@@ -142,7 +153,7 @@ const useAuthContext = () => {
     createUserWithEmailAndPassword(auth, email, password)
       .then((userCredential) => {
         const user = userCredential.user;
-
+        saveUser(user.uid, { email: email, username: username });
         authDispatch({
           type: 'USER_LOGIN_SUCCESS',
           payload: {

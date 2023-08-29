@@ -9,7 +9,7 @@ import PlayerHand from '../Features/PlayerHand';
 import GameStats from '../Features/GameStats';
 import HandCard from '../Features/HandCard/HandCard';
 
-import useGameContext from '../Context/GameContext';
+import { useGameContext } from '../Context/GameContext';
 
 const GameRoom = () => {
   const { gameState, startGame, nextRound, playCard } = useGameContext();
@@ -60,6 +60,7 @@ const GameRoom = () => {
       nick,
       message,
     };
+    console.log(messages);
     setMessages([...messages, newMessage]);
   };
 

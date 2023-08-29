@@ -3,7 +3,9 @@ import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 
 import AuthProvider from './Context/AuthContext';
+import GameProvider from './Context/GameContext';
 import ProtectedRoute from './Context/ProtectedRoute';
+
 import Home from './Pages/Home';
 import GameRoom from './Pages/GameRoom';
 import Layout from './Components/Layout';
@@ -16,7 +18,9 @@ function App() {
         <Route
           element={
             <ProtectedRoute>
-              <Layout />
+              <GameProvider>
+                <Layout />
+              </GameProvider>
             </ProtectedRoute>
           }
         >

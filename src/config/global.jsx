@@ -1,2 +1,2 @@
 export const usersCollection = 'users';
-export const GamesCollection = 'games';
+export const roomCollection = 'rooms';
