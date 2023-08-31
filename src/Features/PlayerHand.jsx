@@ -14,7 +14,7 @@ const PlayerHand = ({ local, cards, onCardClick }) => {
         (local ? (
           <Grid container spacing={1} sx={{ display: 'flex', flexWrap: 'nowrap' }}>
             {cards.map((card, index) => (
-              <motion.div key={index} onClick={() => onCardClick(card)}>
+              <motion.div key={card.id} onClick={() => onCardClick(card)}>
                 <Grid item key={index}>
                   <HandCard card={card} playable={true} />
                 </Grid>
