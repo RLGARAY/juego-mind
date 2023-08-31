@@ -105,22 +105,9 @@ const useAuthContext = () => {
       }
     });
 
-    /*// Manejar el evento beforeunload
-    const handleBeforeUnload = () => {
-      if (authState.token) {
-        // Cerrar la sesión del usuario al abandonar la página
-        auth().signOut();
-      }
-    };
-
-    // Agregar el listener al evento beforeunload
-    window.addEventListener('beforeunload', handleBeforeUnload);
-*/
     return () => {
       // Desuscribirse del listener al desmontar el componente
       unsubscribe();
-      // Remover el listener del evento beforeunload al desmontar el componente
-      //window.removeEventListener('beforeunload', handleBeforeUnload);
     };
   }, []);
 

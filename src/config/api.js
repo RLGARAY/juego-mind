@@ -1,9 +1,6 @@
 import { collection, doc, getDoc, getDocs, setDoc, addDoc, updateDoc } from 'firebase/firestore';
 import { db } from './fire';
-import { getStorage } from 'firebase/storage';
 import { usersCollection, roomCollection, gamesCollection } from './global';
-
-export const storage = getStorage();
 
 // USERS  //////////////////////////
 
