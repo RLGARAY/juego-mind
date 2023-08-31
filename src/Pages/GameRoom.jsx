@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 
@@ -10,15 +10,15 @@ import PlayerHand from '../Features/PlayerHand';
 import GameStats from '../Features/GameStats';
 import HandCard from '../Features/HandCard/HandCard';
 
+import { useAuthContext } from '../Context/AuthContext';
 import { useRoomContext } from '../Context/RoomContext';
 import { useGameContext } from '../Context/GameContext';
 
 const GameRoom = () => {
   const navigate = useNavigate();
-  const { roomState, leaveRoom } = useRoomContext();
+  const { authState } = useAuthContext();
+  const { roomState, leaveRoom, sendMessage } = useRoomContext();
   const { gameState, startGame, nextRound, playCard } = useGameContext();
-
-  const [messages, setMessages] = useState([]);
 
   const handleCardClick = (card) => {
     if (gameState.gameStatus === 'Derrota') {
@@ -27,13 +27,13 @@ const GameRoom = () => {
     playCard(card);
   };
 
-  const handleSendMessage = (nick, message) => {
+  const handleSendMessage = (message) => {
+    const nick = authState.username;
     const newMessage = {
       nick,
       message,
     };
-    console.log(messages);
-    setMessages([...messages, newMessage]);
+    sendMessage(newMessage);
   };
 
   const handleStartGame = () => {
@@ -137,7 +137,7 @@ const GameRoom = () => {
       />
 
       {/* Chat Component */}
-      <Chat messages={messages} onSendMessage={handleSendMessage} />
+      <Chat messages={roomState.messages} onSendMessage={handleSendMessage} />
     </div>
   );
 };

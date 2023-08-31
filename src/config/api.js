@@ -140,6 +140,18 @@ export async function updateActualGame(roomId, gameId) {
   }
 }
 
+export async function apiSendMessage(roomId, messages) {
+  const roomRef = collection(db, roomCollection);
+
+  try {
+    await updateDoc(doc(roomRef, roomId), {
+      messages: messages,
+    });
+  } catch (error) {
+    throw error;
+  }
+}
+
 // GAME  ///////////////////////////
 
 export async function createGame(roomId, data) {

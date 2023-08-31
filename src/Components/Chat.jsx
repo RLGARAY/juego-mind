@@ -21,8 +21,7 @@ const Chat = ({ messages, onSendMessage }) => {
   const handleMessageSend = (e) => {
     e.preventDefault();
     const message = e.target.message.value;
-    const nick = 'User'; // Cambiar por el nick del remitente
-    onSendMessage(nick, message);
+    onSendMessage(message);
     e.target.reset();
   };
 

@@ -2,7 +2,13 @@ import React, { createContext, useReducer, useContext, useEffect } from 'react';
 
 import { db } from '../config/fire';
 import { doc, onSnapshot } from 'firebase/firestore';
-import { apiCloseRoom, apiCreateRoom, apiJoinRoom, apiLeaveRoom } from '../config/api';
+import {
+  apiCloseRoom,
+  apiCreateRoom,
+  apiJoinRoom,
+  apiLeaveRoom,
+  apiSendMessage,
+} from '../config/api';
 
 const DispatchContext = createContext();
 const StateContext = createContext();
@@ -147,11 +153,20 @@ const useRoomContext = () => {
     }
   };
 
+  const sendMessage = async (newMessage) => {
+    try {
+      const localMessages = [...roomState.messages, newMessage];
+      await apiSendMessage(roomState.roomId, localMessages);
+    } catch (error) {
+      throw error;
+    }
+  };
   return {
     roomState,
     createRoom,
     joinRoom,
     leaveRoom,
+    sendMessage,
   };
 };
 
