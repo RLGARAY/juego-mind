@@ -1,4 +1,4 @@
-import React, { createContext, useReducer, useContext, useEffect } from 'react';
+import React, { createContext, useReducer, useContext, useEffect, useCallback } from 'react';
 
 import { useRoomContext } from '../Context/RoomContext';
 import { dealCards } from '../Features/Card';
@@ -13,7 +13,6 @@ const StateContext = createContext();
 const initialState = {
   gameId: '',
   gameStatus: false,
-  isRoundActive: false,
   roundNumber: 0,
   player1Cards: [],
   player2Cards: [],
@@ -42,9 +41,13 @@ function gameReducer(state, action) {
     case 'NEXT_ROUND': {
       return {
         ...state,
-        isRoundActive: true,
         roundNumber: action.payload.roundNumber,
-        playedCardsInRound: [],
+      };
+    }
+    case 'LIVES_CHANGE': {
+      return {
+        ...state,
+        lives: action.payload.lives,
       };
     }
 
@@ -66,14 +69,6 @@ function gameReducer(state, action) {
       return {
         ...state,
         playedCardsInRound: action.payload.playedCardsInRound,
-        lives: action.payload.lives,
-      };
-    }
-
-    case 'FINISH_ROUND': {
-      return {
-        ...state,
-        isRoundActive: false,
       };
     }
 
@@ -103,6 +98,10 @@ const useGameContext = () => {
 
   const { roomState } = useRoomContext();
 
+  const lossGame = useCallback(() => {
+    updateGame(roomState.roomId, gameState.gameId, { gameStatus: 'Derrota', lives: 0 });
+  }, [roomState.roomId, gameState.gameId]);
+
   // EFFECTS  //////////////////////////
 
   /** Effect to update when there is a change in the db in the game data*/
@@ -113,7 +112,7 @@ const useGameContext = () => {
         payload: { gameId: roomState.actualGame },
       });
     }
-  }, [roomState.actualGame]);
+  }, [roomState.actualGame, gameDispatch]);
 
   useEffect(() => {
     if (gameState.gameId) {
@@ -122,12 +121,31 @@ const useGameContext = () => {
         (doc) => {
           const newData = doc.data();
 
-          const changedFields = Object.keys(newData).filter((field) => {
-            if (['player1Cards', 'player2Cards', 'playedCardsInRound'].includes(field)) {
-              return JSON.stringify(newData[field]) !== JSON.stringify(gameState[field]);
-            }
-            return newData[field] !== gameState[field];
-          });
+          const changedFields = [];
+
+          if (newData.gameStatus !== gameState.gameStatus) {
+            changedFields.push('gameStatus');
+          }
+
+          if (newData.roundNumber !== gameState.roundNumber) {
+            changedFields.push('roundNumber');
+          }
+
+          if (newData.lives !== gameState.lives) {
+            changedFields.push('lives');
+          }
+
+          if (newData.player1Cards !== gameState.player1Cards) {
+            changedFields.push('player1Cards');
+          }
+
+          if (newData.player2Cards !== gameState.player2Cards) {
+            changedFields.push('player2Cards');
+          }
+
+          if (newData.playedCardsInRound !== gameState.playedCardsInRound) {
+            changedFields.push('playedCardsInRound');
+          }
 
           if (changedFields.length > 0) {
             // Realizar acciones según los campos cambiados en game Data
@@ -142,19 +160,22 @@ const useGameContext = () => {
                   });
                   break;
 
-                case 'isRoundActive':
-                  if (newData.isRoundActive) {
-                    gameDispatch({
-                      type: 'NEXT_ROUND',
-                      payload: {
-                        roundNumber: gameState.roundNumber + 1,
-                      },
-                    });
-                  } else {
-                    gameDispatch({
-                      type: 'FINISH_ROUND',
-                    });
-                  }
+                case 'roundNumber':
+                  gameDispatch({
+                    type: 'NEXT_ROUND',
+                    payload: {
+                      roundNumber: newData.roundNumber,
+                    },
+                  });
+                  break;
+
+                case 'lives':
+                  gameDispatch({
+                    type: 'LIVES_CHANGE',
+                    payload: {
+                      lives: newData.lives,
+                    },
+                  });
                   break;
 
                 case 'player1Cards':
@@ -176,36 +197,23 @@ const useGameContext = () => {
                   break;
 
                 case 'playedCardsInRound':
-                  // Comprobar si la última carta es mayor que la anterior
-                  const lastPlayedCard =
-                    newData.playedCardsInRound[newData.playedCardsInRound.length - 1];
-                  const prevPlayedCard =
-                    newData.playedCardsInRound[newData.playedCardsInRound.length - 2];
-                  let lives = gameState.lives;
-
-                  if (lastPlayedCard && prevPlayedCard && lastPlayedCard.id <= prevPlayedCard.id) {
-                    lives = lives - 1;
-                  }
-
                   gameDispatch({
                     type: 'PLAY_CARD',
                     payload: {
                       playedCardsInRound: newData.playedCardsInRound,
-                      lives: lives,
                     },
                   });
 
                   break;
 
                 default:
-                  // Acción por defecto si el campo no se reconoce
                   break;
               }
             });
           }
         },
         (error) => {
-          console.error('Error fetching game data:', error);
+          console.error(error);
         },
       );
 
@@ -217,25 +225,10 @@ const useGameContext = () => {
   }, [gameState.gameId]);
 
   useEffect(() => {
-    console.log('entra fin ronda');
-    if (
-      roomState.host &&
-      gameState.isRoundActive &&
-      gameState.playedCardsInRound.length === gameState.roundNumber * 2
-    ) {
-      console.log('fin ronda');
-      updateGame(roomState.roomId, gameState.gameId, { isRoundActive: false });
-    }
-  }, [gameState.isRoundActive, gameState.playedCardsInRound, gameState.roundNumber]);
-
-  useEffect(() => {
-    console.log('entra vidas');
     if (roomState.host && gameState.lives === 0) {
-      console.log('fin Partida');
-
-      updateGame(roomState.roomId, gameState.gameId, { gameStatus: 'Derrota', lives: 0 });
+      lossGame();
     }
-  }, [gameState.lives]);
+  }, [lossGame, gameState.lives, roomState.host]);
 
   // PUBLIC METHODS   //////////////////////////
 
@@ -245,7 +238,6 @@ const useGameContext = () => {
         player1: roomState.player1,
         player2: roomState.player2,
         gameStatus: 'Active',
-        isRoundActive: false,
         roundNumber: 0,
         player1Cards: [],
         player2Cards: [],
@@ -261,16 +253,14 @@ const useGameContext = () => {
         payload: { gameId: roomData.gameId },
       });
     } catch (error) {
-      console.error('Error desde el método:', error);
+      console.error(error);
     }
   };
 
   const nextRound = async () => {
     const hands = dealCards(2, gameState.roundNumber + 1);
-    console.log('nuevaRonda');
     try {
       const payload = {
-        isRoundActive: true,
         roundNumber: gameState.roundNumber + 1,
         player1Cards: hands[0],
         player2Cards: hands[1],
@@ -279,7 +269,7 @@ const useGameContext = () => {
 
       await updateGame(roomState.roomId, gameState.gameId, payload);
     } catch (error) {
-      console.error('Error desde el método:', error);
+      console.error(error);
     }
   };
 
@@ -290,7 +280,24 @@ const useGameContext = () => {
       ? gameState.player1Cards.filter((c) => c !== card)
       : gameState.player2Cards.filter((c) => c !== card);
 
-    const payload = { playedCardsInRound: [...gameState.playedCardsInRound, card] };
+    const playedCardsInRound = [...gameState.playedCardsInRound, card];
+
+    let lives = gameState.lives;
+
+    if (playedCardsInRound.length > 1) {
+      const lastPlayedCard = playedCardsInRound[playedCardsInRound.length - 1];
+      const prevPlayedCard = playedCardsInRound[playedCardsInRound.length - 2];
+
+      if (lastPlayedCard.id <= prevPlayedCard.id) {
+        lives -= 1;
+      }
+    }
+
+    const payload = {
+      playedCardsInRound: playedCardsInRound,
+      lives: lives,
+    };
+
     if (host) {
       payload.player1Cards = localHand;
     } else {

@@ -35,7 +35,8 @@ const PlayerHand = ({ handleNextRound, handleStartGame }) => {
             {'Nueva Partida'}
           </Button>
         ) : (
-          !gameState.isRoundActive && (
+          gameState.player2Cards.length === 0 &&
+          gameState.player1Cards.length === 0 && (
             <Button variant="contained" color="primary" onClick={handleNextRound}>
               {'Empezar Siguiente Ronda'}
             </Button>
