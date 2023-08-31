@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 
 import Box from '@mui/material/Box';
@@ -13,12 +14,16 @@ import { useRoomContext } from '../Context/RoomContext';
 import { useGameContext } from '../Context/GameContext';
 
 const GameRoom = () => {
-  const { roomState } = useRoomContext();
+  const navigate = useNavigate();
+  const { roomState, leaveRoom } = useRoomContext();
   const { gameState, startGame, nextRound, playCard } = useGameContext();
 
   const [messages, setMessages] = useState([]);
 
   const handleCardClick = (card) => {
+    if (gameState.gameStatus === 'Derrota') {
+      return;
+    }
     playCard(card);
   };
 
@@ -37,6 +42,11 @@ const GameRoom = () => {
 
   const handleNextRound = () => {
     nextRound();
+  };
+
+  const handleLeaveRoom = () => {
+    leaveRoom();
+    navigate('/Home');
   };
 
   return (
@@ -120,7 +130,11 @@ const GameRoom = () => {
       </Box>
 
       {/* Game Info left column */}
-      <GameStats handleNextRound={handleNextRound} handleStartGame={handleStartGame} />
+      <GameStats
+        handleNextRound={handleNextRound}
+        handleStartGame={handleStartGame}
+        handleLeaveRoom={handleLeaveRoom}
+      />
 
       {/* Chat Component */}
       <Chat messages={messages} onSendMessage={handleSendMessage} />

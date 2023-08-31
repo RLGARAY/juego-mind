@@ -137,6 +137,7 @@ const useRoomContext = () => {
             player2: '',
             host: false,
             messages: [],
+            actualGame: '',
           },
         });
       }

@@ -7,7 +7,7 @@ import Typography from '@mui/material/Typography';
 import { useRoomContext } from '../Context/RoomContext';
 import { useGameContext } from '../Context/GameContext';
 
-const PlayerHand = ({ handleNextRound, handleStartGame }) => {
+const GameStats = ({ handleNextRound, handleStartGame, handleLeaveRoom }) => {
   const { roomState } = useRoomContext();
   const { gameState } = useGameContext();
 
@@ -43,11 +43,16 @@ const PlayerHand = ({ handleNextRound, handleStartGame }) => {
           )
         ))}
 
-      <Button variant="contained" color="secondary" style={{ marginTop: '20px' }}>
-        Salir por implementar o borrar
+      <Button
+        variant="contained"
+        color="secondary"
+        style={{ marginTop: '20px' }}
+        onClick={handleLeaveRoom}
+      >
+        {'Salir de la sala'}
       </Button>
     </div>
   );
 };
 
-export default PlayerHand;
+export default GameStats;

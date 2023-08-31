@@ -45,7 +45,7 @@ const Home = () => {
     setRoomCode(value);
   };
 
-  const CreateRoom = (e) => {
+  const handleCreateRoom = (e) => {
     const localRoomId = Math.floor(Math.random() * 1000)
       .toString()
       .padStart(3, '0');
@@ -54,7 +54,7 @@ const Home = () => {
     navigate('/' + localRoomId);
   };
 
-  const JoinRoom = async (e) => {
+  const handleJoinRoom = async (e) => {
     const roomString = roomId.toString().padStart(3, '0');
     try {
       await joinRoom(roomString, authState.username);
@@ -90,7 +90,7 @@ const Home = () => {
             handleRoomCodeChange(event);
           }}
         />
-        <Button variant="contained" color="primary" onClick={CreateRoom}>
+        <Button variant="contained" color="primary" onClick={handleCreateRoom}>
           Crear Sala
         </Button>
       </Paper>
@@ -125,7 +125,7 @@ const Home = () => {
         <Typography variant="body1" sx={{ color: 'red' }}>
           {joinError}
         </Typography>
-        <Button variant="contained" color="primary" onClick={JoinRoom}>
+        <Button variant="contained" color="primary" onClick={handleJoinRoom}>
           Unirse a Sala
         </Button>
       </Paper>
