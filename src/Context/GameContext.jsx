@@ -28,6 +28,12 @@ function gameReducer(state, action) {
         ...state,
         gameId: action.payload.gameId,
         gameStatus: 'Active',
+        roundNumber: 0,
+        player1Cards: [],
+        player2Cards: [],
+        playedCardsInRound: [],
+        lives: 3,
+        jokers: 3,
       };
     }
 
@@ -102,6 +108,9 @@ const useGameContext = () => {
     updateGame(roomState.roomId, gameState.gameId, { gameStatus: 'Derrota', lives: 0 });
   }, [roomState.roomId, gameState.gameId]);
 
+  const winGame = useCallback(() => {
+    updateGame(roomState.roomId, gameState.gameId, { gameStatus: 'Victoria' });
+  }, [roomState.roomId, gameState.gameId]);
   // EFFECTS  //////////////////////////
 
   /** Effect to update when there is a change in the db in the game data*/
@@ -229,6 +238,23 @@ const useGameContext = () => {
       lossGame();
     }
   }, [lossGame, gameState.lives, roomState.host]);
+
+  useEffect(() => {
+    if (
+      roomState.host &&
+      gameState.roundNumber === 3 &&
+      gameState.player1Cards.length === 0 &&
+      gameState.player2Cards.length === 0
+    ) {
+      winGame();
+    }
+  }, [
+    winGame,
+    gameState.roundNumber,
+    roomState.host,
+    gameState.player1Cards,
+    gameState.player2Cards,
+  ]);
 
   // PUBLIC METHODS   //////////////////////////
 

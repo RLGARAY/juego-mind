@@ -27,6 +27,8 @@ const GameStats = ({ handleNextRound, handleStartGame, handleLeaveRoom }) => {
           <Typography variant="h6">Comodines: {gameState.jokers}</Typography>
         </Box>
       )}
+      {gameState.gameStatus === 'Derrota' && <Typography variant="h4">¡Habéis Perdido!</Typography>}
+      {gameState.gameStatus === 'Victoria' && <Typography variant="h4">¡Habéis Ganado!</Typography>}
 
       {roomState.host &&
         roomState.player2 !== '' &&
