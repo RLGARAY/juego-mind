@@ -88,7 +88,7 @@ const GameRoom = () => {
           <motion.div layout>
             {gameState.playedCardsInRound.map((card, index) => (
               <motion.div
-                key={index}
+                key={card.id}
                 initial={{ opacity: 0, y: '100%' }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5 }}

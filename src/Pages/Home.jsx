@@ -15,8 +15,8 @@ const Home = () => {
   const { authState } = useAuthContext();
   const { createRoom, joinRoom } = useRoomContext();
 
-  const [roomId, setRoomId] = useState();
-  const [roomCode, setRoomCode] = useState();
+  const [roomId, setRoomId] = useState('');
+  const [roomCode, setRoomCode] = useState('');
   const [joinError, setJoinError] = useState(false);
 
   /**
