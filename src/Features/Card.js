@@ -10,23 +10,10 @@ function createDeck() {
   const deck = [];
 
   for (let id = 1; id <= 100; id++) {
-    const card = new Card(id);
-    deck.push(card);
+    deck.push({ id: id });
   }
 
   return deck;
-}
-
-// Función para repartir cartas a los jugadores
-function dealCards(deck, numCards) {
-  const shuffledDeck = shuffleDeck(deck);
-  const hands = [];
-
-  for (let i = 0; i < numCards; i++) {
-    hands.push(shuffledDeck.slice(i * 2, (i + 1) * 2)); // Cambia el 2 por el número de cartas por mano
-  }
-
-  return hands;
 }
 
 // Función para mezclar el mazo de cartas
@@ -39,11 +26,18 @@ function shuffleDeck(deck) {
   return shuffledDeck;
 }
 
-// Uso de las funciones para crear cartas, repartir y mostrar las manos de los jugadores
-const deck = createDeck();
-const numCardsPerHand = 3; // Cambia este valor según lo que necesites
+// Función para repartir cartas a los jugadores
+export function dealCards(players, numCards) {
+  const deck = createDeck();
+  const shuffledDeck = shuffleDeck(deck);
+  const hands = [];
 
-const playerHands = dealCards(deck, numCardsPerHand);
-
-console.log('Mano del Jugador 1:', playerHands[0]);
-console.log('Mano del Jugador 2:', playerHands[1]);
+  for (let i = 0; i < players; i++) {
+    const playerHand = [];
+    for (let j = 0; j < numCards; j++) {
+      playerHand.push(shuffledDeck.pop());
+    }
+    hands.push(playerHand);
+  }
+  return hands;
+}

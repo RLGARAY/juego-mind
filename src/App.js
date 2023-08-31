@@ -3,6 +3,7 @@ import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 
 import AuthProvider from './Context/AuthContext';
+import RoomProvider from './Context/RoomContext';
 import GameProvider from './Context/GameContext';
 import ProtectedRoute from './Context/ProtectedRoute';
 
@@ -18,14 +19,22 @@ function App() {
         <Route
           element={
             <ProtectedRoute>
-              <GameProvider>
+              <RoomProvider>
                 <Layout />
-              </GameProvider>
+              </RoomProvider>
             </ProtectedRoute>
           }
         >
           <Route exact path="/Home" element={<Home />} />
-          <Route exact path="/:roomId" element={<GameRoom />} />
+          <Route
+            exact
+            path="/:roomId"
+            element={
+              <GameProvider>
+                <GameRoom />
+              </GameProvider>
+            }
+          />
           <Route path="/" element={<Navigate to="/Home" replace />} />
         </Route>
 

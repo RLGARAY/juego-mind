@@ -4,14 +4,13 @@ import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Typography from '@mui/material/Typography';
 
-const PlayerHand = ({
-  round,
-  gameIsActive,
-  roundIsActive,
-  handleNextRound,
-  handleStartGame,
-  setGameIsActive,
-}) => {
+import { useRoomContext } from '../Context/RoomContext';
+import { useGameContext } from '../Context/GameContext';
+
+const PlayerHand = ({ handleNextRound, handleStartGame }) => {
+  const { roomState } = useRoomContext();
+  const { gameState } = useGameContext();
+
   return (
     <div
       style={{
@@ -21,31 +20,30 @@ const PlayerHand = ({
         marginRight: '50px',
       }}
     >
-      {gameIsActive && (
+      {gameState.gameStatus === 'Active' && (
         <Box>
-          <Typography variant="h4">Ronda: {round}</Typography>
-          <Typography variant="h6">Vidas: {0}</Typography>
-          <Typography variant="h6">Comodines: {0}</Typography>
+          <Typography variant="h4">Ronda: {gameState.roundNumber}</Typography>
+          <Typography variant="h6">Vidas: {gameState.lives}</Typography>
+          <Typography variant="h6">Comodines: {gameState.jokers}</Typography>
         </Box>
       )}
-      {gameIsActive && roundIsActive ? (
-        <></>
-      ) : (
-        <Button
-          variant="contained"
-          color="primary"
-          onClick={gameIsActive ? handleNextRound : handleStartGame}
-        >
-          {gameIsActive ? 'Siguiente Ronda' : 'Nueva Partida'}
-        </Button>
-      )}
-      <Button
-        variant="contained"
-        color="secondary"
-        style={{ marginTop: '20px' }}
-        onClick={() => setGameIsActive(false)}
-      >
-        Terminar Partida
+
+      {roomState.host &&
+        roomState.player2 !== '' &&
+        (gameState.gameStatus !== 'Active' ? (
+          <Button variant="contained" color="primary" onClick={handleStartGame}>
+            {'Nueva Partida'}
+          </Button>
+        ) : (
+          !gameState.isRoundActive && (
+            <Button variant="contained" color="primary" onClick={handleNextRound}>
+              {'Empezar Siguiente Ronda'}
+            </Button>
+          )
+        ))}
+
+      <Button variant="contained" color="secondary" style={{ marginTop: '20px' }}>
+        Salir por implementar o borrar
       </Button>
     </div>
   );

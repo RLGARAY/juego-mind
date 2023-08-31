@@ -1,16 +1,18 @@
-import { collection, doc, getDoc, getDocs, setDoc, updateDoc } from 'firebase/firestore';
+import { collection, doc, getDoc, getDocs, setDoc, addDoc, updateDoc } from 'firebase/firestore';
 import { db } from './fire';
 import { getStorage } from 'firebase/storage';
-import { usersCollection, roomCollection } from './global';
+import { usersCollection, roomCollection, gamesCollection } from './global';
 
 export const storage = getStorage();
+
+// USERS  //////////////////////////
 
 export async function saveUser(user, data) {
   try {
     const usersRef = collection(db, usersCollection);
     await setDoc(doc(usersRef, user), data);
-  } catch (e) {
-    console.error('Error adding document: ', e);
+  } catch (error) {
+    throw error;
   }
 }
 
@@ -27,59 +29,58 @@ export async function getUserData(uid) {
   return docSnap.data();
 }
 
-export async function removeAnon(uid) {
-  const docRef = doc(db, usersCollection, uid);
-  const docSnap = await getDoc(docRef);
-  return docSnap.data();
-}
+// ROOMS  //////////////////////////
 
-export async function apiCreateRoom(uid, player1) {
+export async function apiCreateRoom(roomNumber, player1) {
   const roomRef = collection(db, roomCollection);
 
   try {
     const roomDocs = await getDocs(roomRef);
     let roomDoc = null;
     roomDocs.forEach((doc) => {
-      if (doc.data().id === uid) {
+      if (doc.data().roomNumber === roomNumber) {
         roomDoc = doc;
       }
     });
-
     if (roomDoc) {
       // La sala ya existe, actualizar sala
       await updateDoc(doc(roomRef, roomDoc.id), {
-        id: uid,
+        roomNumber: roomNumber,
         player1: player1,
         player2: '',
         messages: [],
+        actualGame: '',
       });
+      return { roomId: roomDoc.id };
     } else {
       // La sala no existe, crear sala
-      await setDoc(doc(roomRef), {
-        id: uid,
+      const docRef = await addDoc(roomRef, {
+        roomNumber: roomNumber,
         player1: player1,
         messages: [],
+        actualGame: '',
       });
+      return { roomId: docRef.id };
     }
   } catch (error) {
     throw error;
   }
 }
 
-export async function apiJoinRoom(uid, player2) {
+export async function apiJoinRoom(roomNumber, player2) {
   const roomRef = collection(db, roomCollection);
 
   try {
     const roomDocs = await getDocs(roomRef);
     let roomDoc = null;
     roomDocs.forEach((doc) => {
-      if (doc.data().id === uid) {
+      if (doc.data().roomNumber === roomNumber) {
         roomDoc = doc;
       }
     });
 
     if (roomDoc) {
-      const roomData = roomDoc.data();
+      const roomData = { ...roomDoc.data(), roomId: roomDoc.id };
 
       if (!roomData.player1) {
         // La sala existe pero no tiene player1
@@ -100,6 +101,64 @@ export async function apiJoinRoom(uid, player2) {
       // La sala no existe
       throw new Error('La sala no esta creada.');
     }
+  } catch (error) {
+    throw error;
+  }
+}
+export async function apiCloseRoom(roomId) {
+  const roomRef = collection(db, roomCollection);
+
+  try {
+    await updateDoc(doc(roomRef, roomId), {
+      player1: '',
+      player2: '',
+      messages: [],
+      actualGame: '',
+    });
+  } catch (error) {
+    throw error;
+  }
+}
+export async function apiLeaveRoom(roomId) {
+  const roomRef = collection(db, roomCollection);
+
+  try {
+    await updateDoc(doc(roomRef, roomId), {
+      player2: '',
+    });
+  } catch (error) {
+    throw error;
+  }
+}
+
+export async function updateActualGame(roomId, gameId) {
+  const roomRef = collection(db, roomCollection);
+
+  try {
+    await updateDoc(doc(roomRef, roomId), {
+      actualGame: gameId,
+    });
+  } catch (error) {
+    throw error;
+  }
+}
+
+// GAME  ///////////////////////////
+
+export async function createGame(roomId, data) {
+  const gamesRef = collection(db, roomCollection, roomId, gamesCollection);
+  try {
+    const gameRef = await addDoc(gamesRef, data);
+    return { gameId: gameRef.id };
+  } catch (error) {
+    throw error;
+  }
+}
+
+export async function updateGame(roomId, gameId, data) {
+  const gamesRef = collection(db, roomCollection, roomId, gamesCollection);
+  try {
+    await updateDoc(doc(gamesRef, gameId), data);
   } catch (error) {
     throw error;
   }

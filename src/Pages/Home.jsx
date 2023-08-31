@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import { useAuthContext } from '../Context/AuthContext';
-import { useGameContext } from '../Context/GameContext';
+import { useRoomContext } from '../Context/RoomContext';
 
 import Box from '@mui/material/Box';
 import Paper from '@mui/material/Paper';
@@ -13,7 +13,7 @@ import Typography from '@mui/material/Typography';
 const Home = () => {
   const navigate = useNavigate();
   const { authState } = useAuthContext();
-  const { createRoom, joinRoom } = useGameContext();
+  const { createRoom, joinRoom } = useRoomContext();
 
   const [roomId, setRoomId] = useState();
   const [roomCode, setRoomCode] = useState();

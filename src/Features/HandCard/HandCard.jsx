@@ -21,7 +21,6 @@ const HandCard = ({ card, playable }) => {
           height: '150px',
           margin: '0 10px',
         }}
-        onClick={() => console.log('Carta seleccionada')}
       >
         <img style={{ width: '100%', height: '100%' }} alt="card" src={'Images/BaseCard.png'} />
 

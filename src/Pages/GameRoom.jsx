@@ -9,50 +9,17 @@ import PlayerHand from '../Features/PlayerHand';
 import GameStats from '../Features/GameStats';
 import HandCard from '../Features/HandCard/HandCard';
 
+import { useRoomContext } from '../Context/RoomContext';
 import { useGameContext } from '../Context/GameContext';
 
 const GameRoom = () => {
+  const { roomState } = useRoomContext();
   const { gameState, startGame, nextRound, playCard } = useGameContext();
 
   const [messages, setMessages] = useState([]);
-  const [round, setRound] = useState(0);
-  const [gameIsActive, setGameIsActive] = useState(false);
-  const [roundIsActive, setRoundIsActive] = useState(false);
-
-  const [tableCards, setTableCards] = useState([]);
-  const [localPlayerCards, setLocalPlayerCards] = useState([
-    { id: 99 },
-    { id: 2 },
-    { id: 3 },
-    { id: 4 },
-    { id: 5 },
-    { id: 6 },
-    { id: 7 },
-    { id: 8 },
-    { id: 9 },
-    { id: 10 },
-    { id: 11 },
-    { id: 12 },
-  ]); // Ejemplo de cartas del jugador
-  const [otherPlayerCards, setOtherPlayerCards] = useState([
-    { id: 99 },
-    { id: 2 },
-    { id: 3 },
-    { id: 4 },
-    { id: 5 },
-    { id: 6 },
-    { id: 7 },
-    { id: 8 },
-    { id: 9 },
-    { id: 10 },
-    { id: 11 },
-    { id: 12 },
-  ]); // Ejemplo de cartas del jugador
 
   const handleCardClick = (card) => {
-    // Mueve la carta seleccionada desde la mano del jugador a la mesa
-    setTableCards([...tableCards, card]);
-    setLocalPlayerCards(localPlayerCards.filter((c) => c !== card));
+    playCard(card);
   };
 
   const handleSendMessage = (nick, message) => {
@@ -65,14 +32,11 @@ const GameRoom = () => {
   };
 
   const handleStartGame = () => {
-    setGameIsActive(true);
-    setRound(1);
-    setRoundIsActive(true);
-    //Repartir Cartas
+    startGame();
   };
 
   const handleNextRound = () => {
-    setRound(round + 1);
+    nextRound();
   };
 
   return (
@@ -96,8 +60,18 @@ const GameRoom = () => {
             alignItems: 'center',
           }}
         >
-          <Typography variant="h4">Player</Typography>
-          <PlayerHand local={false} cards={otherPlayerCards} onCardClick={handleCardClick} />
+          <Typography variant="h4">
+            {roomState.host
+              ? roomState.player2
+                ? roomState.player2
+                : 'Waiting...'
+              : roomState.player1}
+          </Typography>
+          <PlayerHand
+            local={false}
+            cards={roomState.host ? gameState.player2Cards : gameState.player1Cards}
+            onCardClick={handleCardClick}
+          />
         </Box>
 
         {/* Game Table */}
@@ -112,7 +86,7 @@ const GameRoom = () => {
           }}
         >
           <motion.div layout>
-            {tableCards.map((card, index) => (
+            {gameState.playedCardsInRound.map((card, index) => (
               <motion.div
                 key={index}
                 initial={{ opacity: 0, y: '100%' }}
@@ -137,19 +111,16 @@ const GameRoom = () => {
             transform: 'translateX(-50%)',
           }}
         >
-          <PlayerHand local={true} cards={localPlayerCards} onCardClick={handleCardClick} />
+          <PlayerHand
+            local={true}
+            cards={roomState.host ? gameState.player1Cards : gameState.player2Cards}
+            onCardClick={handleCardClick}
+          />
         </Box>
       </Box>
 
       {/* Game Info left column */}
-      <GameStats
-        round={round}
-        gameIsActive={gameIsActive}
-        roundIsActive={roundIsActive}
-        handleNextRound={handleNextRound}
-        handleStartGame={handleStartGame}
-        setGameIsActive={setGameIsActive}
-      />
+      <GameStats handleNextRound={handleNextRound} handleStartGame={handleStartGame} />
 
       {/* Chat Component */}
       <Chat messages={messages} onSendMessage={handleSendMessage} />
