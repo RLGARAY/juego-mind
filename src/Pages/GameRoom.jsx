@@ -18,7 +18,7 @@ const GameRoom = () => {
   const navigate = useNavigate();
   const { authState } = useAuthContext();
   const { roomState, leaveRoom, sendMessage } = useRoomContext();
-  const { gameState, startGame, nextRound, playCard } = useGameContext();
+  const { gameState, startGame, nextRound, playCard, playJoker } = useGameContext();
 
   const handleCardClick = (card) => {
     if (gameState.gameStatus === 'Derrota') {
@@ -27,12 +27,22 @@ const GameRoom = () => {
     playCard(card);
   };
 
+  const handleUseJoker = () => {
+    const totalCards = gameState.player1Cards.length + gameState.player2Cards.length;
+
+    if (totalCards >= 2) {
+      playJoker();
+    } else {
+      const nick = 'system';
+      const message = 'No se puede usar el comodín, no hay suficientes cartas.';
+      const newMessage = { nick, message };
+      sendMessage(newMessage);
+    }
+  };
+
   const handleSendMessage = (message) => {
     const nick = authState.username;
-    const newMessage = {
-      nick,
-      message,
-    };
+    const newMessage = { nick, message };
     sendMessage(newMessage);
   };
 
@@ -133,6 +143,7 @@ const GameRoom = () => {
       <GameStats
         handleNextRound={handleNextRound}
         handleStartGame={handleStartGame}
+        handleUseJoker={handleUseJoker}
         handleLeaveRoom={handleLeaveRoom}
       />
 

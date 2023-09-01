@@ -7,7 +7,7 @@ import Typography from '@mui/material/Typography';
 import { useRoomContext } from '../Context/RoomContext';
 import { useGameContext } from '../Context/GameContext';
 
-const GameStats = ({ handleNextRound, handleStartGame, handleLeaveRoom }) => {
+const GameStats = ({ handleNextRound, handleStartGame, handleUseJoker, handleLeaveRoom }) => {
   const { roomState } = useRoomContext();
   const { gameState } = useGameContext();
 
@@ -21,10 +21,23 @@ const GameStats = ({ handleNextRound, handleStartGame, handleLeaveRoom }) => {
       }}
     >
       {gameState.gameStatus === 'Active' && (
-        <Box>
+        <Box sx={{ marginBottom: '20px' }}>
           <Typography variant="h4">Ronda: {gameState.roundNumber}</Typography>
           <Typography variant="h6">Vidas: {gameState.lives}</Typography>
-          <Typography variant="h6">Comodines: {gameState.jokers}</Typography>
+          <Typography variant="h6">
+            Comodines: {gameState.jokers}
+            {roomState.host && gameState.jokers > 0 && (
+              <Button
+                variant="contained"
+                color="primary"
+                size="small"
+                sx={{ marginLeft: '10px' }}
+                onClick={handleUseJoker}
+              >
+                Usar
+              </Button>
+            )}
+          </Typography>
         </Box>
       )}
       {gameState.gameStatus === 'Derrota' && <Typography variant="h4">¡Habéis Perdido!</Typography>}

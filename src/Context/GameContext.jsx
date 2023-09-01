@@ -50,10 +50,18 @@ function gameReducer(state, action) {
         roundNumber: action.payload.roundNumber,
       };
     }
+
     case 'LIVES_CHANGE': {
       return {
         ...state,
         lives: action.payload.lives,
+      };
+    }
+
+    case 'JOKERS_CHANGE': {
+      return {
+        ...state,
+        jokers: action.payload.jokers,
       };
     }
 
@@ -144,6 +152,10 @@ const useGameContext = () => {
             changedFields.push('lives');
           }
 
+          if (newData.jokers !== gameState.jokers) {
+            changedFields.push('jokers');
+          }
+
           if (newData.player1Cards !== gameState.player1Cards) {
             changedFields.push('player1Cards');
           }
@@ -183,6 +195,15 @@ const useGameContext = () => {
                     type: 'LIVES_CHANGE',
                     payload: {
                       lives: newData.lives,
+                    },
+                  });
+                  break;
+
+                case 'jokers':
+                  gameDispatch({
+                    type: 'JOKERS_CHANGE',
+                    payload: {
+                      jokers: newData.jokers,
                     },
                   });
                   break;
@@ -300,28 +321,29 @@ const useGameContext = () => {
   };
 
   const playCard = async (card) => {
+    const { player1Cards, player2Cards, playedCardsInRound, lives, gameId } = gameState;
     const host = roomState.host;
 
     const localHand = host
-      ? gameState.player1Cards.filter((c) => c !== card)
-      : gameState.player2Cards.filter((c) => c !== card);
+      ? player1Cards.filter((c) => c !== card)
+      : player2Cards.filter((c) => c !== card);
 
-    const playedCardsInRound = [...gameState.playedCardsInRound, card];
+    const newPlayedCardsInRound = [...playedCardsInRound, card];
 
-    let lives = gameState.lives;
+    let newLives = lives;
 
-    if (playedCardsInRound.length > 1) {
-      const lastPlayedCard = playedCardsInRound[playedCardsInRound.length - 1];
-      const prevPlayedCard = playedCardsInRound[playedCardsInRound.length - 2];
+    if (newPlayedCardsInRound.length > 1) {
+      const lastPlayedCard = newPlayedCardsInRound[newPlayedCardsInRound.length - 1];
+      const prevPlayedCard = newPlayedCardsInRound[newPlayedCardsInRound.length - 2];
 
       if (lastPlayedCard.id <= prevPlayedCard.id) {
-        lives -= 1;
+        newLives -= 1;
       }
     }
 
     const payload = {
-      playedCardsInRound: playedCardsInRound,
-      lives: lives,
+      playedCardsInRound: newPlayedCardsInRound,
+      lives: newLives,
     };
 
     if (host) {
@@ -330,14 +352,44 @@ const useGameContext = () => {
       payload.player2Cards = localHand;
     }
 
-    await updateGame(roomState.roomId, gameState.gameId, payload);
+    await updateGame(roomState.roomId, gameId, payload);
   };
 
+  const playJoker = async () => {
+    const { player1Cards, player2Cards, playedCardsInRound, gameId, jokers } = gameState;
+
+    // Combinar ambas manos y ordenar las cartas de menor a mayor
+    const allCards = [...player1Cards, ...player2Cards];
+    const sortedCards = allCards.sort((a, b) => a.id - b.id);
+
+    // Encotrar las dos cartas más pequeñas
+    if (sortedCards.length >= 2) {
+      const card1 = sortedCards[0];
+      const card2 = sortedCards[1];
+
+      // Filtrar las manos para eliminar las cartas jugadas
+      const newPlayer1Cards = player1Cards.filter((card) => card !== card1 && card !== card2);
+      const newPlayer2Cards = player2Cards.filter((card) => card !== card1 && card !== card2);
+
+      // Actualizar las cartas jugadas en esta ronda
+      const newPlayedCardsInRound = [...playedCardsInRound, card1, card2];
+
+      const payload = {
+        player1Cards: newPlayer1Cards,
+        player2Cards: newPlayer2Cards,
+        playedCardsInRound: newPlayedCardsInRound,
+        jokers: jokers - 1,
+      };
+
+      await updateGame(roomState.roomId, gameId, payload);
+    }
+  };
   return {
     gameState,
     startGame,
     nextRound,
     playCard,
+    playJoker,
   };
 };
 
