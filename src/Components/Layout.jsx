@@ -79,7 +79,7 @@ function Layout() {
       {/* Info Dialog */}
       <Dialog fullWidth={true} maxWidth={'sm'} open={openInfo} onClose={handleCloseInfo}>
         <DialogContent>
-          <HowToPlay onClose={handleCloseInfo} />
+          <HowToPlay />
         </DialogContent>
         <DialogActions>
           <Button onClick={handleCloseInfo}>Cerrar</Button>
