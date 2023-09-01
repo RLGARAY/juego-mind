@@ -16,7 +16,6 @@ const Home = () => {
   const { createRoom, joinRoom } = useRoomContext();
 
   const [roomId, setRoomId] = useState('');
-  const [roomCode, setRoomCode] = useState('');
   const [joinError, setJoinError] = useState(false);
 
   /**
@@ -30,19 +29,6 @@ const Home = () => {
       value = value.slice(0, 3);
     }
     setRoomId(value);
-  };
-
-  /**
-   * Method to set the Room code and format
-   * it to be only number and 4 max length.
-   */
-  const handleRoomCodeChange = (event) => {
-    let value = event.target.value.replace(/\D/, '');
-
-    if (value.length > 4) {
-      value = value.slice(0, 4);
-    }
-    setRoomCode(value);
   };
 
   const handleCreateRoom = (e) => {
@@ -81,15 +67,6 @@ const Home = () => {
           gap: 5,
         }}
       >
-        <TextField
-          name="roomCode"
-          label="Clave"
-          variant="outlined"
-          value={roomCode}
-          onChange={(event) => {
-            handleRoomCodeChange(event);
-          }}
-        />
         <Button variant="contained" color="primary" onClick={handleCreateRoom}>
           Crear Sala
         </Button>
@@ -113,15 +90,7 @@ const Home = () => {
             handleRoomIdChange(event);
           }}
         />
-        <TextField
-          name="roomCode"
-          label="Clave"
-          variant="outlined"
-          value={roomCode}
-          onChange={(event) => {
-            handleRoomCodeChange(event);
-          }}
-        />
+
         <Typography variant="body1" sx={{ color: 'red' }}>
           {joinError}
         </Typography>
