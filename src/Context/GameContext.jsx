@@ -1,7 +1,7 @@
 import React, { createContext, useReducer, useContext, useEffect, useCallback } from 'react';
 
 import { useRoomContext } from '../Context/RoomContext';
-import { dealCards } from '../Features/Card';
+import { dealCards } from '../Features/HandGenerator';
 
 import { db } from '../config/fire';
 import { doc, onSnapshot } from 'firebase/firestore';

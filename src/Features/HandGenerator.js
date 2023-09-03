@@ -1,11 +1,9 @@
-// Clase para crear cartas
-class Card {
-  constructor(id) {
-    this.id = id;
-  }
-}
-
-// Función para crear un mazo de cartas numeradas del 1 al 100
+/**
+ * This Class is to Generate a Deck with
+ * cards with id from 1 to 100
+ * shuffle them and a method to
+ * deal x cards to x players
+ */
 function createDeck() {
   const deck = [];
 
@@ -16,7 +14,6 @@ function createDeck() {
   return deck;
 }
 
-// Función para mezclar el mazo de cartas
 function shuffleDeck(deck) {
   const shuffledDeck = [...deck];
   for (let i = shuffledDeck.length - 1; i > 0; i--) {
@@ -26,7 +23,6 @@ function shuffleDeck(deck) {
   return shuffledDeck;
 }
 
-// Función para repartir cartas a los jugadores
 export function dealCards(players, numCards) {
   const deck = createDeck();
   const shuffledDeck = shuffleDeck(deck);
