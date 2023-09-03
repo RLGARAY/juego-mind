@@ -19,8 +19,7 @@ const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [username, setUsername] = useState('');
-
-  const [guest, setGuest] = useState(false);
+  const [guest, setGuest] = useState(false); // For Tab state
   const [isLogin, setIsLogin] = useState(true);
 
   useEffect(() => {
@@ -29,6 +28,9 @@ const Login = () => {
     }
   }, [authState.token, navigate]);
 
+  /**
+   * Method to Create user, log in user or log in as guest
+   */
   const handleSubmit = (event) => {
     event.preventDefault();
     if (!guest) {
@@ -41,6 +43,7 @@ const Login = () => {
       loginAsGuest(username);
     }
   };
+
   return (
     <Box
       sx={{

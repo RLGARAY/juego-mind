@@ -20,6 +20,9 @@ const GameRoom = () => {
   const { roomState, leaveRoom, sendMessage } = useRoomContext();
   const { gameState, startGame, nextRound, playCard, playJoker } = useGameContext();
 
+  /**
+   * Method to play the selected card
+   */
   const handleCardClick = (card) => {
     if (gameState.gameStatus === 'Derrota') {
       return;
@@ -27,6 +30,11 @@ const GameRoom = () => {
     playCard(card);
   };
 
+  /**
+   * Method to play a joker
+   * Controls when there are less than 2 cards playable and
+   * sends a message to chat as system
+   */
   const handleUseJoker = () => {
     const totalCards = gameState.player1Cards.length + gameState.player2Cards.length;
 
@@ -40,6 +48,9 @@ const GameRoom = () => {
     }
   };
 
+  /**
+   * Method to send a message to chat with format {nick, message}
+   */
   const handleSendMessage = (message) => {
     const nick = authState.username;
     const newMessage = { nick, message };
@@ -114,7 +125,7 @@ const GameRoom = () => {
                 transition={{ duration: 0.5 }}
                 style={{
                   position: 'absolute',
-                  left: `calc(50% - ${index * 20}px)`,
+                  left: `calc(50% - ${index * 35}px)`,
                 }}
               >
                 <HandCard card={card} playable={false} />

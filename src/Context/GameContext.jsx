@@ -6,7 +6,7 @@ import { dealCards } from '../Features/Card';
 import { db } from '../config/fire';
 import { doc, onSnapshot } from 'firebase/firestore';
 import { updateGame, createGame, updateActualGame } from '../config/api';
-
+import { lives, jokers, max_round } from '../config/global';
 const DispatchContext = createContext();
 const StateContext = createContext();
 
@@ -17,8 +17,8 @@ const initialState = {
   player1Cards: [],
   player2Cards: [],
   playedCardsInRound: [],
-  lives: 3,
-  jokers: 3,
+  lives: lives,
+  jokers: jokers,
 };
 
 function gameReducer(state, action) {
@@ -32,8 +32,8 @@ function gameReducer(state, action) {
         player1Cards: [],
         player2Cards: [],
         playedCardsInRound: [],
-        lives: 3,
-        jokers: 3,
+        lives: lives,
+        jokers: jokers,
       };
     }
 
@@ -106,22 +106,31 @@ export default function GameProvider({ children }) {
     </DispatchContext.Provider>
   );
 }
+
+/**
+ * Hook to access and manage the state of the Game Context
+ */
 const useGameContext = () => {
   const gameState = useContext(StateContext);
   const gameDispatch = useContext(DispatchContext);
 
   const { roomState } = useRoomContext();
 
+  // PRIVATE METHODS  //////////////////////////
+
+  /** Callback to send DB that is a game loss */
   const lossGame = useCallback(() => {
     updateGame(roomState.roomId, gameState.gameId, { gameStatus: 'Derrota', lives: 0 });
   }, [roomState.roomId, gameState.gameId]);
 
+  /** Callback to send DB that is a game win */
   const winGame = useCallback(() => {
     updateGame(roomState.roomId, gameState.gameId, { gameStatus: 'Victoria' });
   }, [roomState.roomId, gameState.gameId]);
+
   // EFFECTS  //////////////////////////
 
-  /** Effect to update when there is a change in the db in the game data*/
+  /** Effect to start the when the actual game changes*/
   useEffect(() => {
     if (roomState.actualGame) {
       gameDispatch({
@@ -131,6 +140,7 @@ const useGameContext = () => {
     }
   }, [roomState.actualGame, gameDispatch]);
 
+  /** Effect to listen the changes in the actual game and control the action*/
   useEffect(() => {
     if (gameState.gameId) {
       const unsubscribe = onSnapshot(
@@ -169,7 +179,7 @@ const useGameContext = () => {
           }
 
           if (changedFields.length > 0) {
-            // Realizar acciones según los campos cambiados en game Data
+            // Actions for the changed fields
             changedFields.forEach((field) => {
               switch (field) {
                 case 'gameStatus':
@@ -248,22 +258,24 @@ const useGameContext = () => {
       );
 
       return () => {
-        // Limpiar la suscripción cuando el componente se desmonta
+        //stop listen when component dismounts
         unsubscribe();
       };
     }
   }, [gameState.gameId]);
 
+  /** Effect to control game loss */
   useEffect(() => {
     if (roomState.host && gameState.lives === 0) {
       lossGame();
     }
   }, [lossGame, gameState.lives, roomState.host]);
 
+  /** Effect to control game win */
   useEffect(() => {
     if (
       roomState.host &&
-      gameState.roundNumber === 3 &&
+      gameState.roundNumber === max_round &&
       gameState.player1Cards.length === 0 &&
       gameState.player2Cards.length === 0
     ) {
@@ -279,6 +291,9 @@ const useGameContext = () => {
 
   // PUBLIC METHODS   //////////////////////////
 
+  /**
+   * Method to start the game (for the host)
+   */
   const startGame = async () => {
     try {
       const payload = {
@@ -289,8 +304,8 @@ const useGameContext = () => {
         player1Cards: [],
         player2Cards: [],
         playedCardsInRound: [],
-        lives: 3,
-        jokers: 3,
+        lives: lives,
+        jokers: jokers,
       };
 
       const roomData = await createGame(roomState.roomId, payload);
@@ -304,6 +319,10 @@ const useGameContext = () => {
     }
   };
 
+  /**
+   * Method to start the next round (for the host)
+   * It also uses dealCard that
+   */
   const nextRound = async () => {
     const hands = dealCards(2, gameState.roundNumber + 1);
     try {
@@ -320,6 +339,10 @@ const useGameContext = () => {
     }
   };
 
+  /**
+   * Method to play a Card and update BE
+   * It also controls if the card played is higher or lower to update the lives.
+   */
   const playCard = async (card) => {
     const { player1Cards, player2Cards, playedCardsInRound, lives, gameId } = gameState;
     const host = roomState.host;
@@ -334,10 +357,13 @@ const useGameContext = () => {
 
     if (newPlayedCardsInRound.length > 1) {
       const lastPlayedCard = newPlayedCardsInRound[newPlayedCardsInRound.length - 1];
-      const prevPlayedCard = newPlayedCardsInRound[newPlayedCardsInRound.length - 2];
 
-      if (lastPlayedCard.id <= prevPlayedCard.id) {
-        newLives -= 1;
+      for (let i = 0; i < newPlayedCardsInRound.length - 1; i++) {
+        const prevCard = newPlayedCardsInRound[i];
+        if (lastPlayedCard.id <= prevCard.id) {
+          newLives -= 1;
+          break;
+        }
       }
     }
 
@@ -355,23 +381,25 @@ const useGameContext = () => {
     await updateGame(roomState.roomId, gameId, payload);
   };
 
+  /**
+   * Method to use the joker
+   * It finds the 2 lowest card in both player hands and plays them
+   */
   const playJoker = async () => {
     const { player1Cards, player2Cards, playedCardsInRound, gameId, jokers } = gameState;
 
-    // Combinar ambas manos y ordenar las cartas de menor a mayor
     const allCards = [...player1Cards, ...player2Cards];
     const sortedCards = allCards.sort((a, b) => a.id - b.id);
 
-    // Encotrar las dos cartas más pequeñas
     if (sortedCards.length >= 2) {
       const card1 = sortedCards[0];
       const card2 = sortedCards[1];
 
-      // Filtrar las manos para eliminar las cartas jugadas
+      // Filter both hand cards to remove the 2 lowest cards
       const newPlayer1Cards = player1Cards.filter((card) => card !== card1 && card !== card2);
       const newPlayer2Cards = player2Cards.filter((card) => card !== card1 && card !== card2);
 
-      // Actualizar las cartas jugadas en esta ronda
+      // Play the cards
       const newPlayedCardsInRound = [...playedCardsInRound, card1, card2];
 
       const payload = {

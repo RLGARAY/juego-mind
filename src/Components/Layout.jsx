@@ -27,6 +27,7 @@ function Layout() {
   const handleCloseInfo = () => {
     setOpenInfo(false);
   };
+
   const handleOpenProfile = () => {
     setOpenProfile(true);
   };
@@ -42,42 +43,26 @@ function Layout() {
           display: 'flex',
           flexDirection: 'row',
           alignItems: 'center',
-          justifyContent: 'center',
+          justifyContent: 'space-between',
           width: 'auto',
-          marginBottom: 5,
+          marginBottom: 15,
         }}
       >
-        <Fab
-          color="primary"
-          aria-label="add"
-          sx={{
-            position: 'fixed',
-            top: '20px',
-            left: '20px',
-          }}
-          onClick={handleOpenInfo}
-        >
+        {/* Info Floating Icon */}
+        <Fab color="primary" aria-label="add" sx={{ left: '30px' }} onClick={handleOpenInfo}>
           <InfoIcon />
         </Fab>
 
         <Typography variant="h1">The Mind</Typography>
 
-        <Fab
-          color="primary"
-          aria-label="add"
-          sx={{
-            position: 'fixed',
-            top: '20px',
-            right: '20px',
-          }}
-          onClick={handleOpenProfile}
-        >
+        {/* Profile Floating Icon */}
+        <Fab color="primary" aria-label="add" sx={{ right: '30px' }} onClick={handleOpenProfile}>
           <ProfileIcon />
         </Fab>
       </Box>
 
       {/* Info Dialog */}
-      <Dialog fullWidth={true} maxWidth={'sm'} open={openInfo} onClose={handleCloseInfo}>
+      <Dialog fullWidth={true} maxWidth={'md'} open={openInfo} onClose={handleCloseInfo}>
         <DialogContent>
           <HowToPlay />
         </DialogContent>

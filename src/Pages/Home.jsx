@@ -31,6 +31,9 @@ const Home = () => {
     setRoomId(value);
   };
 
+  /**
+   * Method to open a random Room in BE
+   */
   const handleCreateRoom = (e) => {
     const localRoomId = Math.floor(Math.random() * 1000)
       .toString()
@@ -40,6 +43,9 @@ const Home = () => {
     navigate('/' + localRoomId);
   };
 
+  /**
+   * Method to join the room by roomNumber
+   */
   const handleJoinRoom = async (e) => {
     const roomString = roomId.toString().padStart(3, '0');
     try {

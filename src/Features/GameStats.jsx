@@ -20,6 +20,7 @@ const GameStats = ({ handleNextRound, handleStartGame, handleUseJoker, handleLea
         marginRight: '50px',
       }}
     >
+      {/* Game stats */}
       {gameState.gameStatus === 'Active' && (
         <Box sx={{ marginBottom: '20px' }}>
           <Typography variant="h4">Ronda: {gameState.roundNumber}</Typography>
@@ -43,8 +44,9 @@ const GameStats = ({ handleNextRound, handleStartGame, handleUseJoker, handleLea
       {gameState.gameStatus === 'Derrota' && <Typography variant="h4">¡Habéis Perdido!</Typography>}
       {gameState.gameStatus === 'Victoria' && <Typography variant="h4">¡Habéis Ganado!</Typography>}
 
+      {/* Host actions */}
       {roomState.host &&
-        roomState.player2 !== '' &&
+        roomState.player2 &&
         (gameState.gameStatus !== 'Active' ? (
           <Button variant="contained" color="primary" onClick={handleStartGame}>
             {'Nueva Partida'}
@@ -57,7 +59,7 @@ const GameStats = ({ handleNextRound, handleStartGame, handleUseJoker, handleLea
             </Button>
           )
         ))}
-
+      {/* Leave Room */}
       <Button
         variant="contained"
         color="secondary"

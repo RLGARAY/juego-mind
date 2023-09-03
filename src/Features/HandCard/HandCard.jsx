@@ -8,8 +8,8 @@ import './style.css';
 const HandCard = ({ card, playable }) => {
   return (
     <motion.div
-      whileHover={{ scale: 1.1, y: -10 }}
-      whileTap={{ scale: 0.9, transition: { duration: 0.3 } }}
+      whileHover={playable ? { scale: 1.1, y: -10 } : {}}
+      whileTap={playable ? { scale: 0.9, transition: { duration: 0.3 } } : {}}
     >
       <Card
         sx={{
@@ -24,7 +24,7 @@ const HandCard = ({ card, playable }) => {
       >
         <img style={{ width: '100%', height: '100%' }} alt="card" src={'Images/BaseCard.png'} />
 
-        {/* Colocación del numero de la carta encima de la imagen base segun su id. */}
+        {/* Setting card number over the image base on card.id */}
         <div className="unselectable text-center">{card.id}</div>
         <div className="unselectable text-corner top-left">{card.id}</div>
         <div className="unselectable text-corner top-right">{card.id}</div>

@@ -11,12 +11,9 @@ import {
   signOut,
 } from 'firebase/auth';
 
-// Crea el contexto de autenticación
 const DispatchContext = React.createContext();
 const StateContext = React.createContext();
-// The initial state tries to fill the token and
-// user profile data from the local or session storage.
-// This way we make the login state persistent.
+
 const initialState = {
   token: null,
   email: null,
@@ -71,7 +68,7 @@ export default function AuthProvider({ children }) {
 }
 
 /**
- * Hook to access and manage the state of the Cost Models Context
+ * Hook to access and manage the state of the Auth Context
  */
 const useAuthContext = () => {
   const authState = useContext(StateContext);
@@ -79,6 +76,10 @@ const useAuthContext = () => {
 
   // EFFECTS  //////////////////////////
 
+  /**
+   * Effect to update when there is a change in the auth state
+   * For the logged user it gets the data from DB
+   */
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (user) {
@@ -106,7 +107,7 @@ const useAuthContext = () => {
     });
 
     return () => {
-      // Desuscribirse del listener al desmontar el componente
+      //stop listen when component dismounts
       unsubscribe();
     };
   }, []);
@@ -136,7 +137,7 @@ const useAuthContext = () => {
       });
   };
 
-  // Funcion para crear un usuario a partir de un email, contraseña y username
+  /** Method to sing in with email and password */
   const createUser = async (email, password, username) => {
     createUserWithEmailAndPassword(auth, email, password)
       .then((userCredential) => {
@@ -153,7 +154,6 @@ const useAuthContext = () => {
         });
       })
       .catch((error) => {
-        // Ocurrió un error durante la creación del usuario
         authDispatch({
           type: 'USER_LOGIN_ERROR',
           payload: { error: error.message },
@@ -161,7 +161,7 @@ const useAuthContext = () => {
       });
   };
 
-  // Función para iniciar sesión con correo electrónico y contraseña
+  /** Method to log in with email and password */
   const login = async (email, password) => {
     signInWithEmailAndPassword(auth, email, password)
       .then((userCredential) => {
@@ -177,7 +177,6 @@ const useAuthContext = () => {
         });
       })
       .catch((error) => {
-        // Ocurrió un error durante la creación del usuario
         authDispatch({
           type: 'USER_LOGIN_ERROR',
           payload: { error: error.message },
@@ -185,7 +184,7 @@ const useAuthContext = () => {
       });
   };
 
-  // Función para cerrar sesión
+  /** Method to log out */
   const logout = async () => {
     signOut(auth)
       .then(() => {
@@ -194,9 +193,7 @@ const useAuthContext = () => {
           type: 'USER_NOT_LOGGED',
         });
       })
-      .catch((error) => {
-        // An error happened.
-      });
+      .catch((error) => {});
   };
 
   return {

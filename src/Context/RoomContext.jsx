@@ -58,6 +58,10 @@ export default function RoomProvider({ children }) {
     </DispatchContext.Provider>
   );
 }
+
+/**
+ * Hook to access and manage the state of the Room Context
+ */
 const useRoomContext = () => {
   const roomState = useContext(StateContext);
   const roomDispatch = useContext(DispatchContext);
@@ -67,20 +71,26 @@ const useRoomContext = () => {
   /** Effect to update when there is a change in the db in the room data*/
   useEffect(() => {
     if (roomState.roomId) {
-      const unsub = onSnapshot(doc(db, 'rooms', roomState.roomId), (doc) => {
-        roomDispatch({
-          type: 'SET_ROOM',
-          payload: {
-            roomId: roomState.roomId,
-            roomNumber: doc.data().roomNumber,
-            player1: doc.data().player1,
-            player2: doc.data().player2,
-            host: roomState.host,
-            messages: doc.data().messages,
-            actualGame: doc.data().actualGame,
-          },
-        });
-      });
+      const unsub = onSnapshot(
+        doc(db, 'rooms', roomState.roomId),
+        (doc) => {
+          roomDispatch({
+            type: 'SET_ROOM',
+            payload: {
+              roomId: roomState.roomId,
+              roomNumber: doc.data().roomNumber,
+              player1: doc.data().player1,
+              player2: doc.data().player2,
+              host: roomState.host,
+              messages: doc.data().messages,
+              actualGame: doc.data().actualGame,
+            },
+          });
+        },
+        (error) => {
+          console.error(error);
+        },
+      );
 
       return unsub;
     }
